@@ -3,8 +3,7 @@
   "builds": [
     {
       "src": "api/index.php",
-      "use": "vercel-php@0.6.0",
-      "config": { "nodeVersion": "20.x" }
+      "use": "vercel-php@0.5.2"
     }
   ],
   "routes": [
