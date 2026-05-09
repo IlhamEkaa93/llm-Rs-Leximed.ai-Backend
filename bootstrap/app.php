@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,6 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Prepend menaruh CORS di pintu paling depan sebelum sistem Laravel lain jalan
         $middleware->prepend(\App\Http\Middleware\Cors::class);
         $middleware->validateCsrfTokens(except: ['api/*']);
     })
