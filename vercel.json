@@ -5,14 +5,18 @@
     {
       "src": "/api/(.*)",
       "headers": {
-        "Access-Control-Allow-Origin": "https://leximed-ai.vercel.app",
+        "Access-Control-Allow-Origin": "https://leximedai-olivia2026-web-technology.vercel.app",
         "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
-        "Access-Control-Allow-Headers": "*"
+        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
+        "Access-Control-Allow-Credentials": "true"
       },
       "continue": true,
       "dest": "/api/index.php"
     },
     { "src": "/(.*)", "dest": "/api/index.php" }
   ],
-  "env": { "APP_ENV": "production", "VIEW_COMPILED_PATH": "/tmp" }
+  "env": {
+    "APP_ENV": "production",
+    "VIEW_COMPILED_PATH": "/tmp"
+  }
 }
