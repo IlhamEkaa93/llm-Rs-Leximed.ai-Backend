@@ -5,7 +5,7 @@
     {
       "src": "/api/(.*)",
       "headers": {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "https://leximed-ai.vercel.app",
         "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
         "Access-Control-Allow-Headers": "*"
       },
@@ -14,8 +14,5 @@
     },
     { "src": "/(.*)", "dest": "/api/index.php" }
   ],
-  "env": {
-    "APP_ENV": "production",
-    "VIEW_COMPILED_PATH": "/tmp"
-  }
+  "env": { "APP_ENV": "production", "VIEW_COMPILED_PATH": "/tmp" }
 }
