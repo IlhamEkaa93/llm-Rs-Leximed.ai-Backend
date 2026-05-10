@@ -20,10 +20,7 @@ use App\Models\User;
 
 // --- 0. FALLBACK UNAUTHORIZED ---
 Route::get('/unauthorized', function () {
-    return response()->json([
-        'success' => false,
-        'message' => 'Akses ditolak. Token tidak valid atau sesi Anda telah berakhir.'
-    ], 401);
+    return response()->json(['success' => false, 'message' => 'Sesi Berakhir.'], 401);
 })->name('login');
 
 
@@ -40,6 +37,15 @@ Route::post('/token', function (Request $request) {
         $user = Auth::user();
         $user->tokens()->delete(); 
         
+        // [FITUR BARU] CATAT AKTIVITAS LOGIN KE AUDIT LOG
+        DB::table('audit_logs')->insert([
+            'user_id'     => $user->id,
+            'action'      => 'LOGIN',
+            'description' => "User {$user->name} ({$user->role}) berhasil login ke sistem.",
+            'created_at'  => now(),
+            'updated_at'  => now()
+        ]);
+        
         return response()->json([
             'success'      => true,
             'access_token' => $user->createToken('auth_token')->plainTextToken,
@@ -52,10 +58,7 @@ Route::post('/token', function (Request $request) {
         ], 200);
     }
     
-    return response()->json([
-        'success' => false, 
-        'message' => 'Kredensial tidak valid.'
-    ], 401);
+    return response()->json(['success' => false, 'message' => 'Kredensial tidak valid.'], 401);
 });
 
 
@@ -63,7 +66,7 @@ Route::post('/token', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
 
     /**
-     * REALTIME AUDIT LOGS
+     * REALTIME AUDIT LOGS (100% AKTIF TANPA PEREDAM)
      */
     Route::get('/audit-logs', function() {
         try {
@@ -100,14 +103,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     /**
-     * STATISTIK DASHBOARD (Untuk Dashboard Perawat & Admin)
+     * STATISTIK DASHBOARD
      */
     Route::get('/dashboard-stats', function() {
         try {
             return response()->json([
                 'success' => true,
                 'total_staff'       => DB::table('users')->count(),
-                'total_logs'        => DB::table('clinical_data')->count(), 
+                'total_logs'        => DB::table('audit_logs')->count(), // Menampilkan jumlah baris di audit logs
                 'total_documents'   => DB::table('knowledge_bases')->count(),
                 'system_uptime'     => '99.9%',
                 'today_patients'    => DB::table('patients')->whereDate('created_at', date('Y-m-d'))->count(),
@@ -139,16 +142,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/clinical-data', function() {
         try {
             $data = ClinicalData::orderBy('created_at', 'desc')->get();
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ], 200);
+            return response()->json(['success' => true, 'data' => $data], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     });
 
-    // --- INI RUTE YANG HILANG (POST /clinical-data) ---
     Route::post('/clinical-data', function(Request $request) {
         DB::beginTransaction();
         try {
@@ -163,6 +162,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'source'      => $request->source ?? 'nurse_note'
             ]);
 
+            // CATAT LOG OTOMATIS
             if (Auth::check()) {
                 $user = Auth::user();
                 DB::table('audit_logs')->insert([
@@ -182,7 +182,6 @@ Route::middleware('auth:sanctum')->group(function () {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     });
-    // --------------------------------------------------
 
     Route::get('/clinical-data/{norm}', [ClinicalDataController::class, 'show']);
     Route::post('/clinical-data/{norm}/generate-ai', [ClinicalDataController::class, 'generateAI']);
@@ -284,9 +283,6 @@ Route::middleware('auth:sanctum')->group(function () {
         }
     });
 
-    /**
-     * MODUL EXECUTIVE MANAGEMENT (Manajemen)
-     */
     Route::get('/manajemen/dashboard', function() {
         return response()->json([
             'stats' => [
