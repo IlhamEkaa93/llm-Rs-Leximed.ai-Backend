@@ -1,27 +1,15 @@
 {
   "version": 2,
   "framework": null,
+  "buildCommand": "mkdir -p dist",
+  "outputDirectory": "dist",
   "functions": {
     "api/index.php": { "runtime": "vercel-php@0.6.2" }
   },
   "routes": [
-    {
-      "src": "/api/token",
-      "methods": ["POST", "OPTIONS"],
-      "dest": "/api/index.php"
-    },
-    {
-      "src": "/api/dashboard-stats",
-      "methods": ["GET", "OPTIONS"],
-      "dest": "/api/index.php"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.php"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.php"
-    }
+    { "src": "/api/token", "methods": ["POST", "OPTIONS"], "dest": "/api/index.php" },
+    { "src": "/api/dashboard-stats", "methods": ["GET", "OPTIONS"], "dest": "/api/index.php" },
+    { "src": "/api/(.*)", "dest": "/api/index.php" },
+    { "src": "/(.*)", "dest": "/api/index.php" }
   ]
 }
