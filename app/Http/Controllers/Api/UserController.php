@@ -10,35 +10,26 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    /**
-     * 1. GET: Mengambil semua data user
-     * Digunakan oleh Admin (Kelola User) dan Frontend (Dropdown DPJP)
-     */
+    // 1. GET: Mengambil semua data user
     public function index()
     {
         try {
-            // PERBAIKAN MUTLAK: Gunakan ::query() agar tidak undefined method
             $users = User::query()->orderBy('created_at', 'desc')->get();
-            
             return response()->json([
                 'success' => true, 
                 'data'    => $users
             ], 200);
-
         } catch (\Exception $e) {
             Log::error("Error GET Users: " . $e->getMessage());
-            
             return response()->json([
                 'success'      => false, 
-                'message'      => 'Gagal mengambil data staf. Error: ' . $e->getMessage(),
+                'message'      => 'Gagal mengambil data staf.',
                 'error_detail' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * 2. POST: Membuat user baru
-     */
+    // 2. POST: Membuat user baru
     public function store(Request $request)
     {
         $request->validate([
@@ -52,9 +43,9 @@ class UserController extends Controller
             $user = User::create([
                 'username' => $request->username,
                 'name'     => $request->name,
-                'email'    => $request->email ?? $request->username . '@darsi.com',
+                'email'    => $request->email ?? $request->username . '@leximed.com',
                 'role'     => $request->role,
-                // Kolom 'unit' dan 'status' DIHAPUS agar tidak error dengan PostgreSQL
+                // Kolom 'unit' dan 'status' DIABAIKAN agar tidak error dengan PostgreSQL
                 'password' => Hash::make($request->password), 
             ]);
 
@@ -73,9 +64,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * 3. PUT: Mengupdate user yang ada berdasarkan ID
-     */
+    // 3. PUT: Mengupdate user yang ada berdasarkan ID
     public function update(Request $request, $id)
     {
         try {
@@ -86,7 +75,6 @@ class UserController extends Controller
                 'name'     => $request->name ?? $user->name,
                 'email'    => $request->email ?? $user->email,
                 'role'     => $request->role ?? $user->role,
-                // Kolom 'unit' dan 'status' DIHAPUS agar tidak error
             ];
 
             if ($request->filled('password')) {
@@ -110,9 +98,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * 4. DELETE: Menghapus user berdasarkan ID
-     */
+    // 4. DELETE: Menghapus user berdasarkan ID
     public function destroy($id)
     {
         try {
