@@ -3,8 +3,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\ClinicalData;
 
-// Rute Token (Login)
+/* Rute Public */
 Route::post('/token', function (Request $request) {
     $credentials = $request->only('username', 'password');
     if (Auth::attempt($credentials)) {
@@ -18,7 +19,6 @@ Route::post('/token', function (Request $request) {
     return response()->json(['success' => false, 'message' => 'Login Gagal'], 401);
 });
 
-// Rute Dashboard Stats
 Route::get('/dashboard-stats', function() {
     return response()->json([
         'success' => true,
@@ -28,3 +28,5 @@ Route::get('/dashboard-stats', function() {
         'system_uptime' => '99.9%'
     ]);
 });
+
+/* Rute lainnya panggil via controller masing-masing seperti kode lamamu */
