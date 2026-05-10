@@ -19,7 +19,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// --- 2. VERCEL SERVERLESS CACHE FIX ---
+// --- 2. VERCEL AUTHORIZATION HEADER FIX (Agar tidak Unauthenticated saat daftar akun) ---
+if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    if (isset($_SERVER['Authorization'])) {
+        $_SERVER['HTTP_AUTHORIZATION'] = $_SERVER['Authorization'];
+    } elseif (function_exists('getallheaders')) {
+        $requestHeaders = getallheaders();
+        $requestHeaders = array_change_key_case($requestHeaders, CASE_UPPER);
+        if (isset($requestHeaders['AUTHORIZATION'])) {
+            $_SERVER['HTTP_AUTHORIZATION'] = $requestHeaders['AUTHORIZATION'];
+        }
+    }
+}
+
+// --- 3. VERCEL SERVERLESS CACHE FIX ---
 $storagePath = '/tmp/storage';
 if (!is_dir($storagePath . '/framework/views')) {
     mkdir($storagePath . '/framework/views', 0777, true);
@@ -28,7 +41,7 @@ putenv("APP_SERVICES_CACHE=/tmp/services.php");
 putenv("APP_PACKAGES_CACHE=/tmp/packages.php");
 putenv("VIEW_COMPILED_PATH=$storagePath/framework/views");
 
-// --- 3. JALANKAN LARAVEL ---
+// --- 4. JALANKAN LARAVEL ---
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;
 }

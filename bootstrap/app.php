@@ -14,19 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // MATIKAN CORS BAWAAN LARAVEL
         $middleware->remove(\Illuminate\Http\Middleware\HandleCors::class);
         $middleware->validateCsrfTokens(except: ['api/*', '*']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Jika token tidak valid / belum login, kembalikan 401 (Bukan 500)
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
             }
         });
-        
-        // Error internal lainnya tetap 500
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
