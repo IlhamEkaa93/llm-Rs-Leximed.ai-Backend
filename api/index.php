@@ -1,9 +1,8 @@
 <?php
 // --- 1. TANGKAP CRASH PHP DAN JADIKAN JSON ---
-ini_set('display_errors', '0'); // Sembunyikan HTML
+ini_set('display_errors', '0');
 register_shutdown_function(function() {
     $error = error_get_last();
-    // Jika ada error fatal (syntax error, missing file, dll)
     if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
         http_response_code(500);
         header('Content-Type: application/json');
@@ -38,7 +37,8 @@ if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
         $_SERVER['HTTP_AUTHORIZATION'] = $_SERVER['Authorization'];
     } elseif (function_exists('getallheaders')) {
         $requestHeaders = getallheaders();
-        $requestHeaders = array_change_key_case($requestHeaders, CASE_CAPITAL);
+        // TYPO FIXED: Menggunakan CASE_UPPER bukan CASE_CAPITAL
+        $requestHeaders = array_change_key_case($requestHeaders, CASE_UPPER);
         if (isset($requestHeaders['AUTHORIZATION'])) {
             $_SERVER['HTTP_AUTHORIZATION'] = $requestHeaders['AUTHORIZATION'];
         }
@@ -54,6 +54,5 @@ putenv("APP_SERVICES_CACHE=/tmp/services.php");
 putenv("APP_PACKAGES_CACHE=/tmp/packages.php");
 putenv("VIEW_COMPILED_PATH=$storagePath/framework/views");
 
-// HAPUS TRIK LAMA YANG BIKIN CRASH (SCRIPT_NAME)
 // --- 5. JALANKAN LARAVEL ---
 require __DIR__ . '/../public/index.php';
