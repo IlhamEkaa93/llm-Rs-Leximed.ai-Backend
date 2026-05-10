@@ -58,8 +58,14 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['success' => true, 'logs' => $logs]);
     });
 
-    // Master Data
+    // --- MASTER DATA USERS (RUTE YANG DITAMBAHKAN) ---
     Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    // --------------------------------------------------
+
+    // Master Data Pasien & Klinis
     Route::get('/patients-list', [PatientController::class, 'index']);
     Route::post('/patients', [PatientController::class, 'store']);
     Route::get('/patients/{query}', [PatientController::class, 'show']);
