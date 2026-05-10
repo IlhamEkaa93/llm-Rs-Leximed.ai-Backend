@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "mkdir -p public && touch public/index.html",
+  "buildCommand": "mkdir -p public && echo 'READY' > public/index.html",
   "outputDirectory": "public",
   "functions": {
     "api/index.php": { "runtime": "vercel-php@0.6.2" }
