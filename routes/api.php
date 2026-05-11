@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Http\Request;
@@ -149,11 +148,32 @@ Route::middleware('auth:sanctum')->group(function () {
         DB::beginTransaction();
 
         try {
-            $rawContent = is_array($request->raw_content) ? json_encode($request->raw_content) : $request->raw_content;
-            $validSources = ['manual', 'whatsapp', 'voice'];
+            // VERCEL HACK: Tangkap file gambar Radiologi jika ada
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $fileName = time() . '_rad_' . $file->getClientOriginalName();
+                $file->move('/tmp', $fileName); // Simpan ke RAM agar tidak diblokir Vercel
+                $imagePath = '/tmp/' . $fileName;
+            }
+
+            $rawContentData = $request->raw_content;
+            
+            // Sisipkan path gambar ke dalam raw_content database
+            if ($imagePath) {
+                if (is_array($rawContentData)) {
+                    $rawContentData['image_path'] = $imagePath;
+                } else {
+                    $rawContentData .= "\n[GAMBAR TERLAMPIR]: " . $imagePath;
+                }
+            }
+
+            $rawContent = is_array($rawContentData) ? json_encode($rawContentData) : $rawContentData;
+            
+            // Tambahkan 'radiologi' ke sumber valid agar tidak ter-reset jadi manual
+            $validSources = ['manual', 'whatsapp', 'voice', 'radiologi'];
             $reqSource = $request->source ?? 'manual';
             $finalSource = in_array($reqSource, $validSources) ? $reqSource : 'manual';
-
 
 
             $data = ClinicalData::create([
@@ -386,4 +406,3 @@ Route::middleware('auth:sanctum')->group(function () {
 
     });
 });
-
