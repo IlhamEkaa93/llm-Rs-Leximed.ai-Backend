@@ -9,13 +9,17 @@ class KnowledgeBase extends Model
 {
     use HasFactory;
 
-    // Ini yang tadi bikin error 500 (Mass Assignment)
+    /**
+     * The attributes that are mass assignable.
+     * * @var array<int, string>
+     */
     protected $fillable = [
         'title', 
         'category', 
         'file_path', 
         'version', 
         'description', 
-        'status'
+        'status',
+        'content' // <--- Sangat penting: Ini adalah kolom untuk menyimpan teks hasil parsing PDF
     ];
 }

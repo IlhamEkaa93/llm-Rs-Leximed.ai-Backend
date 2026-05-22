@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KnowledgeBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Smalot\PdfParser\Parser; // Pastikan library sudah terinstall
 
 class KnowledgeController extends Controller
 {
@@ -14,25 +15,31 @@ class KnowledgeController extends Controller
     }
 
     public function store(Request $request) {
-        // Validasi input
         $request->validate([
             'title' => 'required|string',
             'category' => 'required|string',
-            'file' => 'required|file|mimes:pdf,docx,txt|max:10240', // Max 10MB
+            'file' => 'required|file|mimes:pdf,txt|max:10240',
         ]);
 
         try {
             if ($request->hasFile('file')) {
-                // Simpan file ke folder storage/app/public/knowledge_files
+                // 1. Simpan file fisik
                 $path = $request->file('file')->store('knowledge_files', 'public');
                 
+                // 2. Baca teks dari PDF
+                $parser = new Parser();
+                $pdf = $parser->parseFile($request->file('file')->getPathname());
+                $text = $pdf->getText(); 
+
+                // 3. Simpan ke database dengan kolom 'content'
                 $kb = KnowledgeBase::create([
-                    'title' => $request->title,
-                    'category' => $request->category,
-                    'version' => $request->version ?? '1.0',
+                    'title'       => $request->title,
+                    'category'    => $request->category,
+                    'version'     => $request->version ?? '1.0',
                     'description' => $request->description ?? '-',
-                    'file_path' => $path,
-                    'status' => 'ready' 
+                    'file_path'   => $path,
+                    'content'     => $text, // <-- INI YANG AKAN DIPAKAI RAG
+                    'status'      => 'ready' 
                 ]);
 
                 return response()->json(['success' => true, 'data' => $kb], 201);
@@ -42,12 +49,25 @@ class KnowledgeController extends Controller
         }
     }
 
+    // Fungsi RAG untuk mencari jawaban
+    public function search(Request $request) {
+        $query = $request->input('message');
+        
+        $results = KnowledgeBase::where('content', 'LIKE', '%' . $query . '%')
+                                ->orWhere('title', 'LIKE', '%' . $query . '%')
+                                ->limit(3)
+                                ->get();
+
+        return response()->json([
+            'success' => true, 
+            'data' => $results
+        ]);
+    }
+
     public function destroy($id) {
         try {
             $kb = KnowledgeBase::findOrFail($id);
-            // Hapus file fisik
             Storage::disk('public')->delete($kb->file_path);
-            // Hapus record database
             $kb->delete();
             return response()->json(['success' => true, 'message' => 'Dokumen dihapus']);
         } catch (\Exception $e) {
